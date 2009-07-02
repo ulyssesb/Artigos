@@ -1,0 +1,59 @@
+\documentclass[a4paper]{sbgames}               % final
+%\usepackage[scaled=.92]{helvet}
+\usepackage{times}
+\usepackage{graphicx}
+
+\usepackage[brazil]{babel}   
+\usepackage[utf8]{inputenc}  
+
+%% use this for zero \parindent and non-zero \parskip, intelligently.
+\usepackage{parskip}
+
+%% the 'caption' package provides a nicer-looking replacement
+\usepackage[labelfont=bf,textfont=it]{caption}
+
+\usepackage{url}
+
+%% Paper title.
+\title{Uma visão geral sobre General Game Playing}
+
+%% Author and Affiliation (multiple authors). Use: and between authors
+
+\author{Ulysses Bonfim}
+\contactinfo{ubds06@c3sl.ufpr.br}
+
+%% Keywords that describe your work.
+\keywords{General Game Playing, GGP Competition}
+
+%% Start of the paper
+% Attention: As you need to insert EPS images in Postscript, 
+% you need to insert PDF images into PDFs. 
+% In the text, extensions cancbe omitted (latex use .eps, pdflatex get .pdf) 
+% To convert them: epstopdf myimage.eps
+\begin{document}
+
+%\teaser{
+%  \includegraphics[width=\linewidth]{sample.pdf}
+%  \caption{Optional image}
+%}
+
+%% The ``\maketitle'' command must be the first command after the
+%% ``\begin{document}'' command. It prepares and prints the title block.
+
+\maketitle
+
+%% Sections
+\input{../input/resumo.tex}
+
+%% The ``\keywordlist'' command prints out the keywords.
+\keywordlist
+\contactlist
+
+\input{../input/introducao.tex}
+\input{../input/ggp.tex}
+\input{../input/conclusao.tex}
+
+
+\bibliographystyle{sbgames}
+\bibliography{main}
+\end{document}

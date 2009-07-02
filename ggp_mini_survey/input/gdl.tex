@@ -1,0 +1,164 @@
+\section{Game Description Language}
+Em GDL os jogos são tratados como máquinas de estado. A descrição de um jogo
+consiste em um conjunto de fatos verdadeiros, que descrevem o estado atual, as
+relações que modificam o estado atual, as regras do jogo, e qual o estado deve
+ser atingido para o que o jogo acabe.
+
+Apesar do objetivo do GGP englobar todos os tipos de jogos, a competição trata
+apenas jogos {\it determinísticos} e {\it perfeitamente informados}. Se em um
+jogo conseguirmos determinar seu próximo estado, dado o atual e as ações tomadas
+por todos os jogadores, então ele é {\it determinístico}. Go e Otelo são
+exemplos de jogos desta classe, já Gamão fica fora porque o próximo estado
+depende de um fator não determinístico, os dados. Nos jogos {\it perfeitamente informados} 
+o estado do jogo é conhecido por todos os participantes. São
+considerados perfeitamente informados xadrez e jogo da velha, pois o estado
+atual está no campo de visão dos jogadores. Entretanto, truco e batalha naval,
+onde os jogadores escondem para si partedo estado atual, não entram nesta
+categoria. Jogos podem ter um ou mais jogadores, baseados em rodadas ou
+simultâneos. 
+
+Um pequeno conjunto de palavras chaves é usado em GDL para criar a descrição dos
+jogos: {\it role, init, next, true, does, terminal, goal} e {\it distinct}.
+Como exemplo de construção na linguagem, usaremos o jogo da velha, onde os
+estados correspodem a uma matriz 3x3 em que célula pode estar vazia, preenchida
+com {\it x} ou {\it o}.
+
+A palavra, ou {\it relação}, {\it role} é usada para descrever quais serão os
+jogadores na partida. No jogo da velha temos a seguinte declaração:
+\begin{verbatim}
+  (role xplayer)
+  (role oplayer)
+\end{verbatim}
+indicando dois jogadores, {\it x} e {\it o}.
+
+O predicado {\it init} representa os fatos que são verdades no início do jogo.
+No estado inicial do jogo da velha todos as células são vazias e quem começa é o
+jogador {\it x}.
+\begin{verbatim}
+  (init (cell 1 1 b))
+  (init (cell 1 2 b))
+  (init (cell 1 3 b))
+  (init (cell 2 1 b))
+  (init (cell 2 2 b))
+  (init (cell 2 3 b))
+  (init (cell 3 1 b))
+  (init (cell 3 2 b))
+  (init (cell 3 3 b))
+  (init (control xplayer))
+\end{verbatim}
+Os predicados {\it cell} e {\it control} são específicos em cada jogo. Os
+números também não tem nenhum significado fora deste contexto. A mesma
+declaração poderia ser feita da seguinte maneira:
+\begin{verbatim}
+  (init (booo foo foo beh))
+  (init (booo foo bar beh))
+  (init (booo foo xyz beh))
+\end{verbatim}
+      $\vdots$
+\begin{verbatim}
+  (init (trew xplayer))
+\end{verbatim}
+sem perder a semântica. Essa falta de comprometimento com a sintáxe tem um papel
+importante na formulação da heurística, como veremos adiante.
+
+As relações {\it true} e {\it init} tomam uma regra ou âtomo como parâmetro, que
+são verdadeiros no estado atual do jogo. A diferença entre eles é que {\it init}
+é usada para criar o estado inicial do jogo e não é mais usada depois, enquanto
+{\it true} fará as atualizações dos fatos nos demais estados. A declaração:
+\begin{verbatim}
+  (true (cell 2 2 b))
+  (true (control xplayer))
+\end{verbatim}
+indica que no estado atual a célula do centro da matriz (posição 2,2) contém um
+branco e o jogador {\it x} deverá jogar.
+
+Análoga à {\it true}, a relação {\it next} refere aos fatos que serão verdades
+no próximo estado. Em nosso exemplo, o controle das rodadas é feito da seguinte
+maneira: 
+\begin{verbatim}
+  (<= (next (control xplayer))
+      (true (control oplayer)))
+
+  (<= (next (control oplayer))
+      (true (control xplayer)))
+\end{verbatim}
+
+No jogo da velha um jogador poderá marcar uma das células se ela estiver vazia e
+se for a sua vez de jogar. A declaração de quais jogadas podem ser feitas em um
+determinado estado do jogo é descrita usando o axioma {\it legal}. Essa relação
+toma como parâmetro um jogador e uma ação (ou movimento).
+\begin{verbatim}
+  (<= (legal ?player (mark ?x ?y))
+      (true (cell ?x ?y b))
+      (true (control ?player)))
+
+  (<= (legal xplayer noop)
+      (true (control oplayer)))
+
+  (<= (legal oplayer noop)
+      (true (control xplayer)))
+\end{verbatim}
+O axioma {\it noop} é usado no controle de rodadas quando não é a vez do
+jogador, sua única ação é não fazer nada.
+
+
+Caso um jogador possa marcar uma célula, verificando através do {\it legal} se é
+possível, no próximo estado do jogo é esperado que aquela célula contenha a
+marca deixada. O resultado das ações legais tomadas é descrita usando a relação
+{\it does}:
+\begin{verbatim}
+  (<= (next (cell ?m ?n x))
+      (does xplayer (mark ?m ?n))
+\end{verbatim}
+No próximo estado a célula {\it ?m ?n} conterá um {\it x} se a jogada puder ser
+efetuada pelo jogador {\it x} no atual estado.
+
+Para o problema do quadro ({\it frame problem}) temos uma adição dos axiomas:
+\begin{verbatim}
+  (<= (next (cell ?x ?y b))
+      (does ?player (mark ?m ?n))
+      (true (cell ?x ?y b))
+      (distinctCell ?x ?y ?m ?n))
+
+  (<= (distinctCell ?x ?y ?m ?n)
+      (distinct ?x ?m))
+
+  (<= (distinctCell ?x ?y ?m ?n)
+      (distinct ?y ?n))
+\end{verbatim}
+indicando que se uma célula contém um branco no estado atual e o jogador não a
+marca, no próximo estado ela continuará contendo branco. A palavra chave {\it distinct} 
+é usada para comparar dois axiomas.
+
+O fim de jogo é alcançado quando um dos jogadores consegue marcar uma sequência
+de três células, em uma coluna, linha ou na diagonal, ou quando não há mais
+espaços em branco.
+\begin{verbatim}
+  (<= terminal
+      (line x))
+
+  (<= terminal
+      (line o))
+
+  (<= terminal
+      (not open))
+\end{verbatim}
+
+A pontuação que cada jogador consegue ao atingir o final do jogo é encontrada
+nas regras {\it goal}.
+\begin{verbatim}
+  (<= (goal xplayer 100)
+      (line x))
+
+  (<= (goal xplayer 50)
+      (not (line x))
+      (not (line o))
+      (not open))
+
+  (<= (goal xplayer 0)
+      (line o))
+\end{verbatim}
+O jogador {\it x} conseguirá 100 pontos se tiver uma seguência, 50 se der
+``velha'' e nenhum se o adversário fizer a sequência. As definições {\it terminal} 
+e {\it goal} usam declarações de axiomas auxiliares. A descrição completa do
+jogo da velha pode ser encontrada nos anexos.

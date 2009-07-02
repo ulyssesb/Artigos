@@ -1,0 +1,28 @@
+\section{General Game Playing}
+Jogadores tradicionais como DeepBlue\cite{dblue}, Chinok\cite{chinok} e
+TD-Gammon\cite{tesauro} usam árvores como estrutura computacional para
+representar e analisar as jogadas (ou nós). Isto só é possível porque na
+construção do jogador, o programador tem o conhecimento prévio das regras, logo,
+sabe quais jogadas podem ser feitas, independente se são boas ou ruins. No
+entanto, na maioria dos jogos, o espaço de estados para busca é muito grande,
+tornando inviável percorrer todos os nós até achar um caminho que leve a vitória
+(busca exaustiva). 
+
+A solução é usar uma função que avalie quais nós são mais promissores,permitindo
+que os piores não sejam expandidos. Esta função, chamada de heurística, é gerada
+à partir da análise sobre as regras e de experiência adquirida durante os
+jogos. No jogo de damas, por exemplo, uma heurística plauzível seria a diferença
+do número de peças em relação ao adversário. Utilizando esta heurística, pode-se
+comparar dois nós e decidir qual caminho tomar na árvore.
+
+O cenário proposto pelo GGP inviabiliza as técnicas clássicas na construção de
+jogadores porque elas são específicas para cada jogo. Nos jogos generalistas,
+não sabemos de antemão qual jogo o programa irá enfrentar, logo a ávore de busca
+só será criada depois que receber quais são as regras e delas tirar os movimentos
+válidos. Também não podemos contar com experiência no jogo, para derivar uma
+heuristica. Esta é construída com técnicas que diferem de jogador para jogador. 
+
+A descrição dos jogos na competição é feita através de uma linguagem derivada da
+lógica de primeira ordem, {\it Game Description Language} ({\bf GDL}). As
+decisões do jogador serão baseadas nas informações que podemos retirar e inferir
+desta descrição.  
