@@ -21,8 +21,8 @@ simultâneos.
 Um pequeno conjunto de palavras chaves é usado em GDL para criar a descrição dos
 jogos: {\it role, init, next, true, does, terminal, goal} e {\it distinct}.
 Como exemplo de construção na linguagem, usaremos o jogo da velha, onde os
-estados correspondem a uma matriz 3x3 em que cada célula pode estar vazia, preenchida
-com {\it x} ou {\it o}.
+estados correspondem a uma matriz 3x3 em que cada célula pode estar vazia,
+preenchida com {\it x} ou {\it o}.
  
 A palavra, ou {\it relação}, {\it role} é usada para descrever quais serão os
 jogadores na partida. No jogo da velha temos a seguinte declaração:
@@ -32,7 +32,7 @@ jogadores na partida. No jogo da velha temos a seguinte declaração:
 \end{verbatim}
 indicando dois jogadores, {\it x} e {\it o}.
  
-O predicado {\it init} representa os fatos que são verdades no início do jogo.
+A relação {\it init} representa os fatos que são verdades no início do jogo.
 No estado inicial do jogo da velha todos as células são vazias e quem começa é o
 jogador {\it x}.
 \begin{verbatim}
@@ -47,9 +47,10 @@ jogador {\it x}.
   (init (cell 3 3 b))
   (init (control xplayer))
 \end{verbatim}
-Os predicados {\it cell} e {\it control} são específicos em cada jogo. Os
-números também não tem nenhum significado fora deste contexto. A mesma
-declaração poderia ser feita da seguinte maneira:
+Relações adicionais são usadas em conjunto com as palavras chaves para que o
+jogo possa ser descrito. Para as células temos {\it cell}, que recebe três
+tokens como argumento, a posição vertical, horizontal e o conteúdo guardado. 
+Entretanto, a declaração acima poderia ser feita da seguinte maneira:
 \begin{verbatim}
   (init (booo foo foo beh))
   (init (booo foo bar beh))
@@ -59,14 +60,14 @@ declaração poderia ser feita da seguinte maneira:
 \begin{verbatim}
   (init (trew xplayer))
 \end{verbatim}
-sem perder a semântica. Essa falta de comprometimento com a sintaxe tem um papel
-importante na formulação da heurística, como veremos adiante.
+sem perder a semântica da estrutura. Essa falta de comprometimento com a sintaxe
+tem um papel importante na formulação da heurística, como veremos adiante.
  
-As relações {\it true} e {\it init} tomam uma regra ou átomo como parâmetro, que
-são verdadeiros no estado atual do jogo. A diferença entre eles é que {\it init}
-é usada para criar o estado inicial do jogo e não é mais usada depois, enquanto
-{\it true} fará as atualizações dos fatos nos demais estados. A declaração:
-
+As relações {\it true} e {\it init} tomam uma relação ou um token como
+parâmetro, que são verdadeiros no estado atual do jogo. A diferença entre eles é
+que {\it init} é usada para criar o estado inicial do jogo e não é mais usada
+depois, enquanto {\it true} fará as atualizações dos fatos nos demais estados. A
+declaração: 
 \begin{verbatim}
   (true (cell 2 2 b))
   (true (control xplayer))
@@ -88,8 +89,8 @@ O símbolo {\it $<$=} indica uma implicação reversa.
  
 No jogo da velha um jogador poderá marcar uma das células se ela estiver vazia e
 se for a sua vez de jogar. A declaração de quais jogadas podem ser feitas em um
-determinado estado do jogo é descrita usando o axioma {\it legal}. Essa relação
-toma como parâmetro um jogador e uma ação (ou movimento).
+determinado estado do jogo é descrita usando a palavra chave {\it legal}. Essa
+relação toma como parâmetro um jogador e uma ação (ou movimento).
 \begin{verbatim}
   (<= (legal ?player (mark ?x ?y))
       (true (cell ?x ?y b))
@@ -101,7 +102,7 @@ toma como parâmetro um jogador e uma ação (ou movimento).
   (<= (legal oplayer noop)
       (true (control xplayer)))
 \end{verbatim}
-O axioma {\it noop} é usado no controle de rodadas quando não é a vez do
+O token {\it noop} é usado no controle de rodadas quando não é a vez do
 jogador, sua única ação é não fazer nada. Tokens iniciados com ``?'' são
 variáveis.
  
@@ -132,8 +133,7 @@ Para o problema do quadro ({\it frame problem}) temos uma adição dos axiomas:
 \end{verbatim}
 indicando que se uma célula contém um branco no estado atual e o jogador não a
 marca, no próximo estado ela continuará contendo branco. A palavra chave {\it
-  distinct}
-é usada para comparar dois axiomas.
+  distinct} é usada para comparar dois axiomas.
  
 O fim de jogo é alcançado quando um dos jogadores consegue marcar uma sequência
 de três células, em uma coluna, linha ou na diagonal, ou quando não há mais
@@ -168,9 +168,10 @@ O jogador {\it x} conseguirá 100 pontos se tiver uma sequência, 50 se der
 terminais for atingido. A descrição completa do jogo da velha pode ser
 encontrada nos anexos.
 
-A descrição de um jogo pode usar relações adicionais para simplificar as
-condições de outras regras, como {\it line} no exemplo acima, e suportar
-relações numéricas. No domínio do jogo da velha não se mostra necessário, porém
+Para simplificar a descrição do jogo, usamos uma relação adicional {\it line}, 
+que é verdadeira se o jogador conseguiu fazer uma sequência. No domínio do jogo
+da velha não se mostra necessário, porém outras regras podem existir para
+simular relações numéricas.
 podemos definir: 
 \begin{verbatim}
   (succ 1 2) (succ 2 3) (succ 3 4)
