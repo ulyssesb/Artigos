@@ -72,7 +72,7 @@ A estruturas identificadas sugerem {\it features}, valores numéricos extraídos
 \begin{verbatim}
     (init (cell off shi p))    
 \end{verbatim}
-denota que a peça, ou marcador, {\it p} esta na coordenada (1,2). Destas coordenadas o agente pode calcular a distância Manhattan entre as peças. Se o tabuleiro não está ordenado, ainda podemos contar o número de ocorrências dos marcadores.
+denota que a peça (ou marcador) {\it p} está na coordenada (1,2). Destas coordenadas o agente pode calcular a distância Manhattan entre as peças. Se o tabuleiro não está ordenado, ainda podemos contar o número de ocorrências dos marcadores.
 
 A função heurística é derivada das {\it features} descobertas. Para aumentar as chances de escolher uma boa heurística, \cite{dresner} cria um conjunto de heurísticas candidatas, cada uma sendo a máximização e a minimização das {\it features} descobertas. Deste modo, em um jogo como Resta Um, a minimização da {\it feature} número de peças é uma boa heurística candidata.
 
