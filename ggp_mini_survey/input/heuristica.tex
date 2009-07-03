@@ -1,4 +1,4 @@
-\section{Construção da Heurística}
+\section{Heurística}
 A menos que o espaço de estado seja pequeno o bastante para ser gerado
 integralmente, considerando também o peso da prova de teoremas, o jogador deve
 usar uma função heurística para avaliar os novos estados encontrados e, assim,
@@ -7,22 +7,21 @@ o número de peças a nosso favor é bom para um jogo como Damas, mas produz
 resultados catastróficos em Resta Um. Grande parte do esforço despendido na
 criação de um jogador tradicional, é feita por seres humanos tentando melhorar a
 função de avaliação.
-
+ 
 Em GGP, a construção da heurística deve ser baseada apenas nas informações
 contidas na descrição. O fator determinante para o sucesso do jogador está em
 como utilizar as características ({\it features}) para compor a função de
 avaliação. Cada jogador submetido à competição analisa a descrição e constroi a
 função heurística de maneira ímpar. Veremos a seguir uma técnica simples para o
-reconhecimento das {\it features} descrita por \cite{\dresner}.
-
-
+reconhecimento das {\it features} descrita por \cite{dresner} e como ele gera a função heurística.
+ 
 \subsection{Identificando estruturas sintáticas}
 Na descrição podemos reconhecer cinco estruturas básica: relações de sucessão,
 contadores, tabuleiros, marcadores, peças e quantidades. A identificação destas
 é feita comparando as relações, contidas na descrição, com modelos das
 estruturas. Apesar dos modelos serem específicos para GDL, eles podem ser
 conceitualmente adaptados para qualquer outra linguagem lógica.
-
+ 
 Como mencionado anteriormente, não podemos depender dos tokens para a construção
 do modelo. Na competição, a descrição dos jogos tem o nome dos tokens e relações
 embaralhados para que o jogador não obtenha dicas da estrutura do jogo apenas
@@ -40,29 +39,52 @@ a sucessão é uma propriedade estrutural e não léxica.
 \end{verbatim}
 \hspace{2cm} \vdots
 \begin{verbatim}
-   <succ> <atom n-1> <atom n>   
+   <succ> <atom n-1> <atom n>
 \end{verbatim}
 Sem a identificação desta relação, não conseguiríamos saber que a coluna {\it a}
 esta próxima da coluna {\it b}, em um jogo como Xadrez ou Damas.
-
+ 
 Um jogo pode conter várias realções de sucessão, que são usadas para identificar
 {\it contadores}. Um contador é um termo funcional incrementado em cada estado
-do jogo e podem ser identificados usando o seguinte modelo: 
+do jogo e podem ser identificados usando o seguinte modelo:
 \begin{verbatim}
    (<= (next (<counter> ?<var1>))
        (true (<counter> ?<var2>))
        (<successor> ?<var2> ?<var1>))
 \end{verbatim}
-onde $<$counter$>$ é a função identificada e $<$sucessor$>$ uma relação de sucessão. 
-
+onde $<$counter$>$ é a função identificada e $<$sucessor$>$ uma relação de sucessão.
+ 
 Outra estrutura identificavel é o {\it tabuleiro}. Um tabuleiro é uma matriz de
 duas dimenções de células que mudam de valor. \cite{dresner} assume que toda
 relação ternária de um estado é um tabuleiro. No entanto, um dos argumentos do
 tabuleiro precisa corresponder a um estado da célula, que nunca pode ter dois
 valores simultâneos. No jogo da velha temos um tabuleiro, a relação {\it cell}.
-
-Após reconhecido o tabuleiro, podemos reconhecer os {\it marcadores}, que são
+Se os argumentos de um tabuleiro são ordenados por alguma relação de sucessão, como as colunas e linhas no Xadrez, o tabuleiro é considerado {\it ordenado}.
+ 
+Após reconhecido o tabuleiro, podemos identificar {\it marcadores}, que são
 objetos que ocupam as células do tabuleiro. Se um marcador esta em apenas uma
 célula de cada vez, então ele recebe o nome de {\it peça}. Em nosso exemplo, os
 marcadores {\it x} e {\it o} não são considerados peças porque podem estar em
 mais de uma célula do tabuleiro ao mesmo tempo.
+
+\subsection{Construção da Heurística}
+A estruturas identificadas sugerem {\it features}, valores numéricos extraídos das estruturas. Se um tabuleiro é considerado ordenado, então podemos atribuir um valor numérico para as cordenadas {\it x} e {\it y} para cada peça. Utilizando as relações {\it foo} e {\it jap}, declaradas anteriormente, o exemplo:
+\begin{verbatim}
+    (init (cell off shi p))    
+\end{verbatim}
+denota que a peça, ou marcador, {\it p} esta na coordenada (1,2). Destas coordenadas o agente pode calcular a distância Manhattan entre as peças. Se o tabuleiro não está ordenado, ainda podemos contar o número de ocorrências dos marcadores.
+
+A função heurística é derivada das {\it features} descobertas. Para aumentar as chances de escolher uma boa heurística, \cite{dresner} cria um conjunto de heurísticas candidatas, cada uma sendo a máximização e a minimização das {\it features} descobertas. Deste modo, em um jogo como Resta Um, a minimização da {\it feature} número de peças é uma boa heurística candidata.
+
+A função de avaliação terá um valor que varia de $R^- + 1$ e $R^+ - 1$, onde $R^-$ e $R^+$ são o mínimo e máximo que um jogador pode atingir na relação {\it goal}. Os valores de maximização e minimização da função heurística são calculados respectivamente da seguinte forma:
+\begin{center}
+ $H(s) = 1 + R^- + (R^+ - R^- - 2) * V(s) $
+ $H(s) = 1 + R^- + (R^+ - R^- - 2) * [1 - V(s)] $
+\end{center}
+onde $H(s)$ é o valor da heurística no estado {\it s} e $V(s)$ o valor da {\it feature} escalado entre 0 e 1.
+O conjunto de heurísticas é testado em um torneio interno, para que se possa haviliar qual é a melhor.
+
+\subsection{Fluxplayer}
+O método demostrado acima é apenas uma das possíveis abordagens para a construção da Heurística. O Fluxplayer (\cite{flux}), ganhador da competição realizada em 2006, combina as {\it features} extraídas da descrição com uma heurística formulada usando lógica {\it fuzzy}. A ideia central da função de avaliação é ver quão próximo o estado atual está de atingir as condições impostas pelas regras {\it goal} e {\it terminal}. Os valores para essas regras são atribuidos de forma que os estados terminais sejam evitados enquanto os objetivos ({\it goal}) não sejam preenchidos.
+
+Seja um mundo de blocos onde temos três blocos, {\it a}, {\it b} e {\it c} e um objetivo {\it g = on(a,b) $\land$ on(b,c) $\land$ ontable(c)}. A heurística avalia quais condições do objetivo são satisfeitas no estado atual, resultando em um valor 0 ou 1. Entretanto, enquanto os pré-requisitos não forem satisfeitos, a função retornará sempre o valor 0. A solução para esse problema é descrita no artigo original.
