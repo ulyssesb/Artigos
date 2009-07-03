@@ -1,0 +1,39 @@
+\section{Construção da Heurística}
+A menos que o espaço de estado seja pequeno o bastante para ser gerado
+integralmente, considerando também o peso da prova de teoremas, o jogador deve
+usar uma função heurística para avaliar os novos estados encontrados e, assim,
+limitar a busca. Tal função de avaliação é específica de jogo para jogo. Contar
+o número de peças a nosso favor é bom para um jogo como Damas, mas produz
+resultados catastróficos em Resta Um. Grande parte do esforço despendido na
+criação de um jogador tradicional, é feita por seres humanos tentando melhorar a
+função de avaliação.
+
+Baseada nas características ({\it features}) que podem ser extraídas da
+descrição,CITE desenvolveram
+um método para gerar heurísticas automaticamente. Nos atentaremos em como as
+{\it features} são extraídas e, mais adiante, como os jogadores as usam para
+construír as heurísticas.
+
+O primeiro passo para a construção da heurística é reconhecer estruturas como
+contadores, tabuleiros, peças e etc. Segundo CITE, os jogadores identificam as estruturas através de um
+modelo, que mesmo sendo específicos para GDL, podem ser conceitualmente aplicada
+a qualquer outra linguagem.
+
+Como já mencionado acima, os tokens em GDL não tem nenhum siginificado semântico
+para o jogador. Na competição os tokens são misturados para que somente a
+sintatica seja considerada na construção dos jogadores. A relação sucessor, por
+exemplo, pode ser descrita como:
+\begin{verbatim}
+   (foo on off) (foo off one) (foo one blue)
+   (jap ichi ni) (jap ni san) (jap san shi)
+\end{verbatim}
+Ainda sim podemos identificar esta como sendo uma relação de sucessão, pois
+seguem uma estrutura do tipo
+\begin{verbatim}
+   <succ> <atom 1> <atom 2>
+   <succ> <atom 2> <atom 3>
+\end{verbatim}
+\hspace{2cm} \vdots
+\begin{verbatim}
+   <succ> <atom n-1> <atom n>   
+\end{verbatim}

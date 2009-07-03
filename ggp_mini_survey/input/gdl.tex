@@ -3,26 +3,27 @@ Em GDL os jogos são tratados como máquinas de estado. A descrição de um jogo
 consiste em um conjunto de fatos verdadeiros, que descrevem o estado atual, as
 relações que modificam o estado atual, as regras do jogo, e qual o estado deve
 ser atingido para o que o jogo acabe.
-
+ 
 Apesar do objetivo do GGP englobar todos os tipos de jogos, a competição trata
 apenas jogos {\it determinísticos} e {\it perfeitamente informados}. Se em um
 jogo conseguirmos determinar seu próximo estado, dado o atual e as ações tomadas
 por todos os jogadores, então ele é {\it determinístico}. Go e Otelo são
 exemplos de jogos desta classe, já Gamão fica fora porque o próximo estado
-depende de um fator não determinístico, os dados. Nos jogos {\it perfeitamente informados} 
+depende de um fator não determinístico, os dados. Nos jogos {\it perfeitamente
+  informados}
 o estado do jogo é conhecido por todos os participantes. São
 considerados perfeitamente informados xadrez e jogo da velha, pois o estado
 atual está no campo de visão dos jogadores. Entretanto, truco e batalha naval,
 onde os jogadores escondem para si partedo estado atual, não entram nesta
 categoria. Jogos podem ter um ou mais jogadores, baseados em rodadas ou
-simultâneos. 
-
+simultâneos.
+ 
 Um pequeno conjunto de palavras chaves é usado em GDL para criar a descrição dos
 jogos: {\it role, init, next, true, does, terminal, goal} e {\it distinct}.
 Como exemplo de construção na linguagem, usaremos o jogo da velha, onde os
-estados correspodem a uma matriz 3x3 em que célula pode estar vazia, preenchida
+estados correspondem a uma matriz 3x3 em que célula pode estar vazia, preenchida
 com {\it x} ou {\it o}.
-
+ 
 A palavra, ou {\it relação}, {\it role} é usada para descrever quais serão os
 jogadores na partida. No jogo da velha temos a seguinte declaração:
 \begin{verbatim}
@@ -30,7 +31,7 @@ jogadores na partida. No jogo da velha temos a seguinte declaração:
   (role oplayer)
 \end{verbatim}
 indicando dois jogadores, {\it x} e {\it o}.
-
+ 
 O predicado {\it init} representa os fatos que são verdades no início do jogo.
 No estado inicial do jogo da velha todos as células são vazias e quem começa é o
 jogador {\it x}.
@@ -54,35 +55,37 @@ declaração poderia ser feita da seguinte maneira:
   (init (booo foo bar beh))
   (init (booo foo xyz beh))
 \end{verbatim}
-      $\vdots$
+\hspace{2cm} \vdots
 \begin{verbatim}
   (init (trew xplayer))
 \end{verbatim}
-sem perder a semântica. Essa falta de comprometimento com a sintáxe tem um papel
+sem perder a semântica. Essa falta de comprometimento com a sintaxe tem um papel
 importante na formulação da heurística, como veremos adiante.
-
-As relações {\it true} e {\it init} tomam uma regra ou âtomo como parâmetro, que
+ 
+As relações {\it true} e {\it init} tomam uma regra ou átomo como parâmetro, que
 são verdadeiros no estado atual do jogo. A diferença entre eles é que {\it init}
 é usada para criar o estado inicial do jogo e não é mais usada depois, enquanto
 {\it true} fará as atualizações dos fatos nos demais estados. A declaração:
+
 \begin{verbatim}
   (true (cell 2 2 b))
   (true (control xplayer))
 \end{verbatim}
 indica que no estado atual a célula do centro da matriz (posição 2,2) contém um
 branco e o jogador {\it x} deverá jogar.
-
+ 
 Análoga à {\it true}, a relação {\it next} refere aos fatos que serão verdades
 no próximo estado. Em nosso exemplo, o controle das rodadas é feito da seguinte
-maneira: 
+maneira:
 \begin{verbatim}
   (<= (next (control xplayer))
       (true (control oplayer)))
-
+ 
   (<= (next (control oplayer))
       (true (control xplayer)))
 \end{verbatim}
-
+O símbolo {\it $<$=} indica uma implicação reversa.
+ 
 No jogo da velha um jogador poderá marcar uma das células se ela estiver vazia e
 se for a sua vez de jogar. A declaração de quais jogadas podem ser feitas em um
 determinado estado do jogo é descrita usando o axioma {\it legal}. Essa relação
@@ -91,17 +94,18 @@ toma como parâmetro um jogador e uma ação (ou movimento).
   (<= (legal ?player (mark ?x ?y))
       (true (cell ?x ?y b))
       (true (control ?player)))
-
+ 
   (<= (legal xplayer noop)
       (true (control oplayer)))
-
+ 
   (<= (legal oplayer noop)
       (true (control xplayer)))
 \end{verbatim}
 O axioma {\it noop} é usado no controle de rodadas quando não é a vez do
-jogador, sua única ação é não fazer nada.
-
-
+jogador, sua única ação é não fazer nada. Tokens iniciados com ``?'' são
+variáveis.
+ 
+ 
 Caso um jogador possa marcar uma célula, verificando através do {\it legal} se é
 possível, no próximo estado do jogo é esperado que aquela célula contenha a
 marca deixada. O resultado das ações legais tomadas é descrita usando a relação
@@ -112,53 +116,112 @@ marca deixada. O resultado das ações legais tomadas é descrita usando a rela�
 \end{verbatim}
 No próximo estado a célula {\it ?m ?n} conterá um {\it x} se a jogada puder ser
 efetuada pelo jogador {\it x} no atual estado.
-
+ 
 Para o problema do quadro ({\it frame problem}) temos uma adição dos axiomas:
 \begin{verbatim}
   (<= (next (cell ?x ?y b))
       (does ?player (mark ?m ?n))
       (true (cell ?x ?y b))
       (distinctCell ?x ?y ?m ?n))
-
+ 
   (<= (distinctCell ?x ?y ?m ?n)
       (distinct ?x ?m))
-
+ 
   (<= (distinctCell ?x ?y ?m ?n)
       (distinct ?y ?n))
 \end{verbatim}
 indicando que se uma célula contém um branco no estado atual e o jogador não a
-marca, no próximo estado ela continuará contendo branco. A palavra chave {\it distinct} 
+marca, no próximo estado ela continuará contendo branco. A palavra chave {\it
+  distinct}
 é usada para comparar dois axiomas.
-
+ 
 O fim de jogo é alcançado quando um dos jogadores consegue marcar uma sequência
 de três células, em uma coluna, linha ou na diagonal, ou quando não há mais
 espaços em branco.
 \begin{verbatim}
   (<= terminal
       (line x))
-
+ 
   (<= terminal
       (line o))
-
+ 
   (<= terminal
       (not open))
 \end{verbatim}
-
+ 
 A pontuação que cada jogador consegue ao atingir o final do jogo é encontrada
 nas regras {\it goal}.
 \begin{verbatim}
   (<= (goal xplayer 100)
       (line x))
-
+ 
   (<= (goal xplayer 50)
       (not (line x))
       (not (line o))
       (not open))
-
+ 
   (<= (goal xplayer 0)
       (line o))
 \end{verbatim}
-O jogador {\it x} conseguirá 100 pontos se tiver uma seguência, 50 se der
-``velha'' e nenhum se o adversário fizer a sequência. As definições {\it terminal} 
-e {\it goal} usam declarações de axiomas auxiliares. A descrição completa do
-jogo da velha pode ser encontrada nos anexos.
+O jogador {\it x} conseguirá 100 pontos se tiver uma sequência, 50 se der
+``velha'' e nenhum se o adversário fizer a sequência, quando um dos estados
+terminais for atingido. A descrição completa do jogo da velha pode ser
+encontrada nos anexos.
+
+A descrição de um jogo pode usar relações adicionais para simplificar as
+condições de outras regras, como {\it line} no exemplo acima, e suportar
+relações numéricas. No domínio do jogo da velha não se mostra necessário, porém
+podemos definir: 
+\begin{verbatim}
+  (succ 1 2) (succ 2 3) (succ 3 4)
+  (nextcol a b) (nextcol b c) (nextcol c d)
+\end{verbatim}
+A relação {\it succ} define como é incrementado algum contador, o número da
+rodada em algum jogo que possui um limite de rodadas para acabar, por
+exemplo. No xadrez, a localização das colunas seria feita usando a relação {\it
+  nextcol}. Encontrar este tipo de relação númerica na descrição tem um grande 
+valor, pois servem de ponte entre representação lógica e numérica.
+
+
+Para que os jogos sejam {\it perfeitamente informados} as regras da competição
+especificam que, antes de cada rodada, os jogadores recebem todas as jogadas
+feitas no último turno.
+\begin{verbatim}
+  (does x (mark 2 2))
+  (does o noop)
+\end{verbatim}
+Desta maneira é possível calcular em qual estado do jogo estamos.
+
+\subsection{Prova de teoremas}
+Para que seja possível derivar os movimentos legais, simular um jogo e
+determinal o final do mesmo, um jogador deve utilizar um provador de
+teoremas. Com a declaração do estado inicial, e as atualizações dos movimentos,
+podemos inferir quais jogadas podemos realizar no estado atual. Para ilustrar,
+tomemos como exemplo o seguinte estado parcial:
+\begin{enumerate}
+  \item \verb|cell(1 1 b)|
+  \item \verb|control(xplayer)|
+\end{enumerate}
+
+Os movimentos legais e seus efeitos na base de conhecimento podem ser traduzidos
+como implicações. 
+\begin{enumerate}
+  \setcounter{enumi}{2}
+  \item \verb|(cell(?x ?y b)| $\land$ \verb|control(?player))|  
+    $\Rightarrow$ \verb|legal(?player (mark ?x ?y))|
+  \item \verb|legal(xplayer (mark ?x ?y)| $\Rightarrow$ 
+    \verb|next(cell(?x ?y x))|
+\end{enumerate}
+
+Usando o provador de teoremas, podemos inferir 
+\begin{enumerate}
+  \setcounter{enumi}{4}
+  \item \verb|legal(xplayer (mark 1 1))|, por {\it 1, 2} e {\it 3}
+  \item \verb|next(cell(1 1 x))|, por {\it 4} e {\it 5}
+\end{enumerate}
+
+Assim conseguimos descobrir que é possivel no estado atual marcar a primeira
+célula (posição 1,1) do tabuleiro. Da mesma maneira, outras jogadas possíveis
+são inferidas. No entanto, a prova de teoremas é custosa computacionalmente, o
+que agrava o problema da construção da árvore de buscas, aumentando ainda mais o
+valor de uma boa heurística.
