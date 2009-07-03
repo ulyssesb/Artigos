@@ -8,27 +8,32 @@ resultados catastróficos em Resta Um. Grande parte do esforço despendido na
 criação de um jogador tradicional, é feita por seres humanos tentando melhorar a
 função de avaliação.
 
-Baseada nas características ({\it features}) que podem ser extraídas da
-descrição, CITE desenvolveram
-um método para gerar heurísticas automaticamente. Nos atentaremos em como as
-{\it features} são extraídas e, mais adiante, como os jogadores as usam para
-construír as heurísticas.
+Em GGP, a construção da heurística deve ser baseada apenas nas informações
+contidas na descrição. O fator determinante para o sucesso do jogador está em
+como utilizar as características ({\it features}) para compor a função de
+avaliação. Cada jogador submetido à competição analisa a descrição e constroi a
+função heurística de maneira ímpar. Veremos a seguir uma técnica simples para o
+reconhecimento das {\it features} descrita por \cite{\dresner}.
 
-O primeiro passo para a construção da heurística é reconhecer estruturas como
-contadores, tabuleiros, peças e etc. Segundo CITE, os jogadores identificam as
-essas estruturas através de um modelo que, mesmo sendo específicos para GDL,
-podem ser conceitualmente aplicadas a qualquer outra linguagem. 
 
-Como mencionado na seção anterior, não podemos depender dos tokens para deduzir
-a semântica de uma relação. A descrição dos jogos na competição previne que os
-jogadores obtenham dicas da estrutura do jogo embaralhando o nome dos tokens e
-das relações. A relação sucessor, por exemplo, pode ser descrita como:  
+\subsection{Identificando estruturas sintáticas}
+Na descrição podemos reconhecer cinco estruturas básica: relações de sucessão,
+contadores, tabuleiros, marcadores, peças e quantidades. A identificação destas
+é feita comparando as relações, contidas na descrição, com modelos das
+estruturas. Apesar dos modelos serem específicos para GDL, eles podem ser
+conceitualmente adaptados para qualquer outra linguagem lógica.
+
+Como mencionado anteriormente, não podemos depender dos tokens para a construção
+do modelo. Na competição, a descrição dos jogos tem o nome dos tokens e relações
+embaralhados para que o jogador não obtenha dicas da estrutura do jogo apenas
+lendo relações como {\it cell}. A relação sucessor, por exemplo, poderia ser
+reescrita como:
 \begin{verbatim}
    (foo on off) (foo off one) (foo one blue)
    (jap ichi ni) (jap ni san) (jap san shi)
 \end{verbatim}
 Ainda sim podemos identificar esta como sendo uma relação de sucessão, pois
-seguem uma estrutura do tipo
+a sucessão é uma propriedade estrutural e não léxica.
 \begin{verbatim}
    <succ> <atom 1> <atom 2>
    <succ> <atom 2> <atom 3>
@@ -37,3 +42,27 @@ seguem uma estrutura do tipo
 \begin{verbatim}
    <succ> <atom n-1> <atom n>   
 \end{verbatim}
+Sem a identificação desta relação, não conseguiríamos saber que a coluna {\it a}
+esta próxima da coluna {\it b}, em um jogo como Xadrez ou Damas.
+
+Um jogo pode conter várias realções de sucessão, que são usadas para identificar
+{\it contadores}. Um contador é um termo funcional incrementado em cada estado
+do jogo e podem ser identificados usando o seguinte modelo: 
+\begin{verbatim}
+   (<= (next (<counter> ?<var1>))
+       (true (<counter> ?<var2>))
+       (<successor> ?<var2> ?<var1>))
+\end{verbatim}
+onde $<$counter$>$ é a função identificada e $<$sucessor$>$ uma relação de sucessão. 
+
+Outra estrutura identificavel é o {\it tabuleiro}. Um tabuleiro é uma matriz de
+duas dimenções de células que mudam de valor. \cite{dresner} assume que toda
+relação ternária de um estado é um tabuleiro. No entanto, um dos argumentos do
+tabuleiro precisa corresponder a um estado da célula, que nunca pode ter dois
+valores simultâneos. No jogo da velha temos um tabuleiro, a relação {\it cell}.
+
+Após reconhecido o tabuleiro, podemos reconhecer os {\it marcadores}, que são
+objetos que ocupam as células do tabuleiro. Se um marcador esta em apenas uma
+célula de cada vez, então ele recebe o nome de {\it peça}. Em nosso exemplo, os
+marcadores {\it x} e {\it o} não são considerados peças porque podem estar em
+mais de uma célula do tabuleiro ao mesmo tempo.
