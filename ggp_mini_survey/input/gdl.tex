@@ -168,11 +168,10 @@ O jogador {\it x} conseguirá 100 pontos se tiver uma sequência, 50 se der
 terminais for atingido. A descrição completa do jogo da velha pode ser
 encontrada nos anexos.
 
-Para simplificar a descrição do jogo, usamos uma relação adicional {\it line}, 
-que é verdadeira se o jogador conseguiu fazer uma sequência. No domínio do jogo
-da velha não se mostra necessário, porém outras regras podem existir para
-simular relações numéricas.
-podemos definir: 
+Para simplificar a descrição, usamos uma relação adicional {\it line}, que é
+verdadeira se o jogador conseguiu fazer uma sequência. No domínio do jogo da
+velha não se mostra necessário, porém outras regras podem existir para simular
+relações numéricas.
 \begin{verbatim}
   (succ 1 2) (succ 2 3) (succ 3 4)
   (nextcol a b) (nextcol b c) (nextcol c d)
@@ -194,11 +193,10 @@ feitas no último turno.
 Desta maneira é possível calcular em qual estado do jogo estamos.
 
 \subsection{Prova de teoremas}
-Para que seja possível derivar os movimentos legais, simular um jogo e
-determinal o final do mesmo, um jogador deve utilizar um provador de
-teoremas. Com a declaração do estado inicial, e as atualizações dos movimentos,
-podemos inferir quais jogadas podemos realizar no estado atual. Para ilustrar,
-tomemos como exemplo o seguinte estado parcial:
+Para que seja possível derivar os movimentos legais o jogador deve utilizar um
+provador de teoremas. Com a declaração do estado inicial, e as atualizações dos
+movimentos, podemos inferir quais jogadas são legais no estado atual. Para
+ilustrar, tomemos como exemplo o seguinte estado parcial:
 \begin{enumerate}
   \item \verb|cell(1 1 b)|
   \item \verb|control(xplayer)|
@@ -221,8 +219,8 @@ Usando o provador de teoremas, podemos inferir
   \item \verb|next(cell(1 1 x))|, por {\it 4} e {\it 5}
 \end{enumerate}
 
-Assim conseguimos descobrir que é possivel no estado atual marcar a primeira
-célula (posição 1,1) do tabuleiro. Da mesma maneira, outras jogadas possíveis
-são inferidas. No entanto, a prova de teoremas é custosa computacionalmente, o
-que agrava o problema da construção da árvore de buscas, aumentando ainda mais o
-valor de uma boa heurística.
+Assim, conseguimos descobrir que é possivel no estado atual marcar a primeira
+célula (posição 1,1) do tabuleiro. De maneira análoga, outras jogadas são
+inferidas. No entanto, a prova de teoremas é custosa computacionalmente, o que
+agrava o problema da construção da árvore de buscas, aumentando ainda mais o
+valor de uma boa heurística. 
